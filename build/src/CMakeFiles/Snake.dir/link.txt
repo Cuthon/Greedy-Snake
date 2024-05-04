@@ -1,3 +1,0 @@
-"D:\Program Files\CMake\bin\cmake.exe" -E rm -f CMakeFiles\Snake.dir/objects.a
-C:\TDM-GCC-64\bin\ar.exe qc CMakeFiles\Snake.dir/objects.a @CMakeFiles\Snake.dir\objects1.rsp
-C:\TDM-GCC-64\bin\g++.exe -g -Wl,--whole-archive CMakeFiles\Snake.dir/objects.a -Wl,--no-whole-archive -o "D:\repos\Greedy Snake\bin\Snake.exe" -Wl,--out-implib,"D:\repos\Greedy Snake\bin\libSnake.dll.a" -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\Snake.dir\linkLibs.rsp
