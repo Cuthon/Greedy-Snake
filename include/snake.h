@@ -1,0 +1,39 @@
+#pragma once
+#include <iostream>
+#include <fstream>
+#include <graphics.h>
+#include <cstring>
+#include <conio.h>
+#include <queue>
+using namespace std;
+
+enum direct { LEFT, RIGHT, UP, DOWN };
+
+class snake {
+public:
+	struct location {
+		int x;
+		int y;
+	};
+	int grade;						//当前得分
+	snake(direct, int);
+	void init();					//初始化蛇
+	void move();					//控制蛇的移动
+	void redirect(direct);			//改变蛇头朝向	
+	bool isDead();					//判断是否死亡
+	bool eatFood();					//判断是否吃到食物
+	bool beWall();					//蛇身变成墙，进阶版使用
+	bool beFood();					//蛇身变成食物，高级版用
+	int snakelen();					//返回蛇长度
+	void show();
+
+private:
+	direct toward;					//当前蛇头朝向
+	int length;						//蛇身长度
+	deque <location> body;			//蛇身队列
+	void update(const location&);
+	void drawBody(const location&);
+	void clearBody(const location&);
+	bool reInit();					//重新生成蛇
+};
+

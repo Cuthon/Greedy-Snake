@@ -1,0 +1,32 @@
+[
+{
+  "directory": "D:/repos/Greedy Snake/build/src",
+  "command": "C:\\TDM-GCC-64\\bin\\g++.exe  @CMakeFiles/Snake.dir/includes_CXX.rsp -g -o CMakeFiles\\Snake.dir\\GameEngine.cpp.obj -c \"D:\\repos\\Greedy Snake\\src\\GameEngine.cpp\"",
+  "file": "D:/repos/Greedy Snake/src/GameEngine.cpp",
+  "output": "src/CMakeFiles/Snake.dir/GameEngine.cpp.obj"
+},
+{
+  "directory": "D:/repos/Greedy Snake/build/src",
+  "command": "C:\\TDM-GCC-64\\bin\\g++.exe  @CMakeFiles/Snake.dir/includes_CXX.rsp -g -o CMakeFiles\\Snake.dir\\food.cpp.obj -c \"D:\\repos\\Greedy Snake\\src\\food.cpp\"",
+  "file": "D:/repos/Greedy Snake/src/food.cpp",
+  "output": "src/CMakeFiles/Snake.dir/food.cpp.obj"
+},
+{
+  "directory": "D:/repos/Greedy Snake/build/src",
+  "command": "C:\\TDM-GCC-64\\bin\\g++.exe  @CMakeFiles/Snake.dir/includes_CXX.rsp -g -o CMakeFiles\\Snake.dir\\main.cpp.obj -c \"D:\\repos\\Greedy Snake\\src\\main.cpp\"",
+  "file": "D:/repos/Greedy Snake/src/main.cpp",
+  "output": "src/CMakeFiles/Snake.dir/main.cpp.obj"
+},
+{
+  "directory": "D:/repos/Greedy Snake/build/src",
+  "command": "C:\\TDM-GCC-64\\bin\\g++.exe  @CMakeFiles/Snake.dir/includes_CXX.rsp -g -o CMakeFiles\\Snake.dir\\snake.cpp.obj -c \"D:\\repos\\Greedy Snake\\src\\snake.cpp\"",
+  "file": "D:/repos/Greedy Snake/src/snake.cpp",
+  "output": "src/CMakeFiles/Snake.dir/snake.cpp.obj"
+},
+{
+  "directory": "D:/repos/Greedy Snake/build/src",
+  "command": "C:\\TDM-GCC-64\\bin\\g++.exe  @CMakeFiles/Snake.dir/includes_CXX.rsp -g -o CMakeFiles\\Snake.dir\\wall.cpp.obj -c \"D:\\repos\\Greedy Snake\\src\\wall.cpp\"",
+  "file": "D:/repos/Greedy Snake/src/wall.cpp",
+  "output": "src/CMakeFiles/Snake.dir/wall.cpp.obj"
+}
+]
