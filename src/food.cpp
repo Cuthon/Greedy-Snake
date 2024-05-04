@@ -1,6 +1,11 @@
 #include "food.h"
 #include "wall.h"
 #include "snake.h"
+
+#include <stdlib.h>
+#include <time.h>
+#include <graphics.h>
+
 food Snack;
 
 int food::newFood()

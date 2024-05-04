@@ -1,7 +1,10 @@
 #pragma once
+
+#include "food.h"
+
 #define ROW 480
 #define COL 640
-#include "food.h"
+
 enum condit { EMPTY, SNAKE, WALL, APPLE, GRAPE, PEACH, GOLDAP };	//此枚举表示地图中每个方块的状态
 
 class Wall {

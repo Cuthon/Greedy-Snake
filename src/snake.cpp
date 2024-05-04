@@ -1,12 +1,19 @@
 #include "snake.h"
 #include "food.h"
 #include "wall.h"
+
+#include <time.h>
+#include <iostream>
+#include <fstream>
+#include <graphics.h>
+#include <cstring>
 using namespace std;
 
 /*公有部分函数*/
 snake::snake(direct t,int len):toward(t),length(len)
 {
 	grade = 0;
+	speed = 1;
 }
 
 void snake::init()
@@ -56,6 +63,11 @@ void snake::redirect(direct t)
 	if (toward == UP && t == DOWN)return;
 	if (toward == DOWN && t == UP)return;
 
+	if (toward == t)
+		speed = 2;
+	else
+		speed = 1;
+
 	toward = t;
 }
 
@@ -100,6 +112,10 @@ bool snake::eatFood()
 int snake::snakelen()
 {
 	return length;
+}
+
+double snake::getSpeed(){
+	return speed;
 }
 
 void snake::show()
