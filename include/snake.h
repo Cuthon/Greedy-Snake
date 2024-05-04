@@ -1,11 +1,6 @@
 #pragma once
-#include <iostream>
-#include <fstream>
-#include <graphics.h>
-#include <cstring>
-#include <conio.h>
+
 #include <queue>
-using namespace std;
 
 enum direct { LEFT, RIGHT, UP, DOWN };
 
@@ -25,12 +20,14 @@ public:
 	bool beWall();					//蛇身变成墙，进阶版使用
 	bool beFood();					//蛇身变成食物，高级版用
 	int snakelen();					//返回蛇长度
+	double getSpeed();					//返回蛇速度
 	void show();
 
 private:
 	direct toward;					//当前蛇头朝向
 	int length;						//蛇身长度
-	deque <location> body;			//蛇身队列
+	double speed;					//前进速度
+	std::deque <location> body;		//蛇身队列
 	void update(const location&);
 	void drawBody(const location&);
 	void clearBody(const location&);

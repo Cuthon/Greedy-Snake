@@ -1,9 +1,6 @@
 #pragma once
+
 #include "snake.h"
-#include <stdlib.h>
-#include <time.h>
-#include <Windows.h>
-#include <graphics.h>
 
 class food {
 public:
