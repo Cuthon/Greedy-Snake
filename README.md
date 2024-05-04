@@ -10,7 +10,8 @@
 ```powershell
 cmake -G "MinGW Makefiles" ..
 cmake --build .
-```
+```  
+4. 如果不想每次都加"-G"参数，则需要新建环境变量`CMAKE_GENERATOR`，值设为`MinGW Makefiles` 
 
 ### 环境依赖
 
