@@ -15,5 +15,5 @@ cmake --build .
 
 ### 环境依赖
 
-/lib目录下的libeasyx.a为easyX的静态库文件，/include/thirdpart目录下的.h文件为easyX的头文件，库文件必须是支持mingw编译器的版本  
-easyX官网：https://easyx.cn/easyx
+1. /lib目录下的libeasyx.a为easyX的静态库文件，/include/thirdpart目录下的.h文件为easyX的头文件，库文件必须是支持mingw编译器的版本
+2. easyX官网：https://easyx.cn/easyx
