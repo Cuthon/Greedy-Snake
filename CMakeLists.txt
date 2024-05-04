@@ -1,8 +1,5 @@
 cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 
-set(CMAKE_C_COMPILER "C:/TDM-GCC-64/bin/gcc.exe")
-set(CMAKE_CXX_COMPILER "C:/TDM-GCC-64/bin/g++.exe")
-
 set(PROJECT_NAME GreedySnake)
 project(${PROJECT_NAME} C CXX)
 
