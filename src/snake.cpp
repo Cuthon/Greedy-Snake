@@ -13,7 +13,8 @@ using namespace std;
 snake::snake(direct t,int len):toward(t),length(len)
 {
 	grade = 0;
-	speed = 1;
+	accFactor = 1;
+	getSpeed();
 }
 
 void snake::init()
@@ -64,9 +65,9 @@ void snake::redirect(direct t)
 	if (toward == DOWN && t == UP)return;
 
 	if (toward == t)
-		speed = 2;
+		accFactor = 2;
 	else
-		speed = 1;
+		accFactor = 1;
 
 	toward = t;
 }
@@ -115,6 +116,7 @@ int snake::snakelen()
 }
 
 double snake::getSpeed(){
+	speed = accFactor * (10 + length/(20.0 + length));
 	return speed;
 }
 

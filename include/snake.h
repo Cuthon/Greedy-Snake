@@ -27,6 +27,7 @@ private:
 	direct toward;					//当前蛇头朝向
 	int length;						//蛇身长度
 	double speed;					//前进速度
+	double accFactor;				//加速倍率
 	std::deque <location> body;		//蛇身队列
 	void update(const location&);
 	void drawBody(const location&);

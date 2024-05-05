@@ -13,73 +13,58 @@
 
 using namespace std;
 
-void drawUI()
-{
-	setbkcolor(RGB(101, 178, 62));
-	cleardevice();
-	settextcolor(WHITE);
-	LOGFONT f;
-	gettextstyle(&f); // 获取当前字体设置
-	f.lfHeight = 24;
-	_tcscpy_s(f.lfFaceName, _T("微软雅黑"));
-	f.lfQuality = ANTIALIASED_QUALITY; // 设置输出效果为抗锯齿
-	settextstyle(&f);				   // 设置字体样式
+GameEngine* GameEngine::_instance = nullptr;
 
-	outtextxy(COL + 40, 100, _T("使用wasd控制移动方向"));
-	outtextxy(COL + 40, 150, _T("游戏时间："));
-
-	outtextxy(COL + 40, 300, _T("当前得分："));
-	outtextxy(COL + 40, 350, _T("蛇身长度："));
-}
-
-void show_time(clock_t st)
-{
-	clock_t now = (clock() - st) / 1000;
-	TCHAR s[6];
-	_stprintf_s(s, _T("%d s"), now);
-	outtextxy(COL + 160, 150, s);
-}
-
-void showInform(int score)
-{
-	TCHAR inform[100];
-	_stprintf_s(inform, _T("游戏结束了！本次得分%d分"), score);
-	MessageBox(NULL, inform, _T("游戏结束"), MB_OK | MB_SYSTEMMODAL);
-}
-
-int bestScore(int mode)
-{
-	int edition;
-	int temp;
-	int score = 0;
-	ifstream fin("history.dat", ios::in | ios::binary);
-
-	while (!fin.eof())
-	{
-		fin >> edition;
-		if (edition == mode)
-		{
-			fin.ignore();
-			fin.ignore(20, ' ');
-			fin >> temp;
-			if (temp > score)
-				score = temp;
-		}
-		fin.ignore(100, '\n'); // 跳到下一行
+GameEngine* GameEngine::GetInstance(){
+	if(_instance == nullptr){
+		_instance = new GameEngine(0);
 	}
-	fin.close(); // 操作完关闭文件
-	return score;
+	return _instance;
 }
 
-void drawScore(int score)
+void GameEngine::Destory(){
+	if(_instance != nullptr){
+		delete _instance;
+		_instance = nullptr;
+	}
+}
+
+void GameEngine::SetState(int cond){
+	state = cond;
+}
+
+int GameEngine::Menu()
 {
-	TCHAR s[10];
-	_stprintf_s(s, _T("%d分"), score);
-	outtextxy(COL + 184, 250, s);
+	system("cls");
+	cout << "*************** 贪吃蛇大作战 ***************" << endl;
+	cout << "*                 1.入门版                 *" << endl;
+	cout << "*                 2.进阶版                 *" << endl;
+	cout << "*                 3.高级版                 *" << endl;
+	cout << "*                 4.历史记录               *" << endl;
+	cout << "*                 5.游戏说明               *" << endl;
+	cout << "*                 0.退出游戏               *" << endl;
+	cout << "********************************************" << endl;
+	cout << "做出你的选择<0-5>:";
+	char choice = getchar();
+	state = choice - '0';
+	return state;
+}
+
+void GameEngine::Execute(){
+	switch(state){
+		case 1:
+		case 2:
+		case 3:
+			execute_local(); break;
+		case 4:
+			readRecord(); break;
+		case 5:
+			help(); break;
+	}
 }
 
 /*游戏执行函数*/
-void Execute(int level)
+void GameEngine::execute_local()
 {
 	ExMessage msg;
 
@@ -90,7 +75,7 @@ void Execute(int level)
 
 	initgraph(COL + 300, ROW + 20);
 	drawUI();
-	switch (level)
+	switch (state)
 	{
 	case 1:
 		outtextxy(COL + 40, 50, _T("当前版本：入门版"));
@@ -106,7 +91,7 @@ void Execute(int level)
 	}
 
 	outtextxy(COL + 40, 250, _T("历史最高分："));
-	int best = bestScore(level); // 获取当前版本的最高分
+	int best = bestScore(state); // 获取当前版本的最高分
 	drawScore(best);			 // 将最高分在屏幕上输出
 
 	Map.initWall();
@@ -152,9 +137,9 @@ void Execute(int level)
 		baby.move();
 		if (baby.isDead())
 		{
-			if (level == 1)
+			if (state == 1)
 				break;
-			else if (level == 2)
+			else if (state == 2)
 			{
 				Snack.renew();
 				eaten = 0;
@@ -164,7 +149,7 @@ void Execute(int level)
 				if (IDNO == MessageBox(NULL, _T("你撞死了，尸体将会变成墙，还要继续玩吗？"), _T("提示"), MB_YESNO | MB_SYSTEMMODAL))
 					break; // 不玩了就退出
 			}
-			else if (level == 3)
+			else if (state == 3)
 			{
 				death++;
 				TCHAR life = 5 - death + 48;
@@ -191,7 +176,7 @@ void Execute(int level)
 
 		if (baby.grade > best)
 			drawScore(baby.grade); // 历史最高分随当前得分同步
-		Sleep(200 / baby.getSpeed());
+		Sleep(1000 / baby.getSpeed());
 	}
 
 	showInform(baby.grade);
@@ -201,23 +186,7 @@ void Execute(int level)
 	closegraph();
 }
 
-char Menu()
-{
-	cout << "*************** 贪吃蛇大作战 ***************" << endl;
-	cout << "*                 1.入门版                 *" << endl;
-	cout << "*                 2.进阶版                 *" << endl;
-	cout << "*                 3.高级版                 *" << endl;
-	cout << "*                 4.历史记录               *" << endl;
-	cout << "*                 5.游戏说明               *" << endl;
-	cout << "*                 0.退出游戏               *" << endl;
-	cout << "********************************************" << endl;
-	cout << "做出你的选择<0-5>:";
-	char choice = getchar();
-	return choice;
-}
-
-void readRecord()
-{
+void GameEngine::readRecord(){
 	system("cls");
 	ofstream outfile("history.dat", ios::out | ios::app); // 如果文件不存在，创建文件
 	outfile.close();									  // 工具流，创建完就关掉
@@ -287,7 +256,7 @@ void readRecord()
 	_getch();
 }
 
-bool delRecord()
+bool GameEngine::delRecord()
 {
 	int lineNum;
 	cin >> lineNum;
@@ -335,7 +304,7 @@ void replaceString(string &origin, string old_value, string new_value)
 	}
 }
 
-void changeName()
+void GameEngine::changeName()
 {
 	ifstream fin("history.dat", ios::in | ios::binary);
 	string old_name, new_name;
@@ -353,7 +322,7 @@ void changeName()
 	cout << "更改成功！" << endl;
 }
 
-void help()
+void GameEngine::help()
 {
 	system("cls");
 
@@ -375,4 +344,71 @@ void help()
 
 	cout << "\n按任意键继续..." << endl;
 	_getch();
+}
+
+
+void GameEngine::drawUI()
+{
+	setbkcolor(RGB(101, 178, 62));
+	cleardevice();
+	settextcolor(WHITE);
+	LOGFONT f;
+	gettextstyle(&f); // 获取当前字体设置
+	f.lfHeight = 28;
+	_tcscpy_s(f.lfFaceName, _T("微软雅黑"));
+	f.lfWeight = FW_MEDIUM;				// 加粗
+	f.lfQuality = ANTIALIASED_QUALITY; 	// 设置输出效果为抗锯齿
+	settextstyle(&f);				   	// 设置字体样式
+
+	outtextxy(COL + 40, 100, _T("使用wasd控制移动方向"));
+	outtextxy(COL + 40, 150, _T("游戏时间："));
+
+	outtextxy(COL + 40, 300, _T("当前得分："));
+	outtextxy(COL + 40, 350, _T("蛇身长度："));
+}
+
+void GameEngine::show_time(clock_t st)
+{
+	clock_t now = (clock() - st) / 1000;
+	TCHAR s[6];
+	_stprintf_s(s, _T("%d s"), now);
+	outtextxy(COL + 160, 150, s);
+}
+
+void GameEngine::showInform(int score)
+{
+	TCHAR inform[100];
+	_stprintf_s(inform, _T("游戏结束了！本次得分%d分"), score);
+	MessageBox(NULL, inform, _T("游戏结束"), MB_OK | MB_SYSTEMMODAL);
+}
+
+int GameEngine::bestScore(int mode)
+{
+	int edition;
+	int temp;
+	int score = 0;
+	ifstream fin("history.dat", ios::in | ios::binary);
+
+	while (!fin.eof())
+	{
+		fin >> edition;
+		if (edition == mode)
+		{
+			fin.ignore();
+			fin.ignore(20, ' ');
+			fin >> temp;
+			if (temp > score)
+				score = temp;
+		}
+		fin.ignore(100, '\n'); // 跳到下一行
+	}
+	fin.close(); // 操作完关闭文件
+	return score;
+}
+
+void GameEngine::drawScore(int score)
+{
+	TCHAR s[10];
+	_stprintf_s(s, _T("%d分"), score);
+	outtextxy(COL + 184, 250, s);
 }
