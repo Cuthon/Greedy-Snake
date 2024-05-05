@@ -116,7 +116,7 @@ int snake::snakelen()
 }
 
 double snake::getSpeed(){
-	speed = accFactor * (10 + length/(20.0 + length));
+	speed = accFactor * (5 + 5 * length/(20.0 + length));
 	return speed;
 }
 

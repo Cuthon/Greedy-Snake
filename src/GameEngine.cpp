@@ -37,9 +37,9 @@ int GameEngine::Menu()
 {
 	system("cls");
 	cout << "*************** 贪吃蛇大作战 ***************" << endl;
-	cout << "*                 1.入门版                 *" << endl;
-	cout << "*                 2.进阶版                 *" << endl;
-	cout << "*                 3.高级版                 *" << endl;
+	cout << "*                 1.经典版                 *" << endl;
+	cout << "*                 2.地形版                 *" << endl;
+	cout << "*                 3.趣味版                 *" << endl;
 	cout << "*                 4.历史记录               *" << endl;
 	cout << "*                 5.游戏说明               *" << endl;
 	cout << "*                 0.退出游戏               *" << endl;
@@ -60,6 +60,8 @@ void GameEngine::Execute(){
 			readRecord(); break;
 		case 5:
 			help(); break;
+		default:
+			return;
 	}
 }
 
@@ -78,13 +80,13 @@ void GameEngine::execute_local()
 	switch (state)
 	{
 	case 1:
-		outtextxy(COL + 40, 50, _T("当前版本：入门版"));
+		outtextxy(COL + 40, 50, _T("当前版本：经典版"));
 		break;
 	case 2:
-		outtextxy(COL + 40, 50, _T("当前版本：进阶版"));
+		outtextxy(COL + 40, 50, _T("当前版本：地形版"));
 		break;
 	case 3:
-		outtextxy(COL + 40, 50, _T("当前版本：高级版"));
+		outtextxy(COL + 40, 50, _T("当前版本：趣味版"));
 		break;
 	default:
 		break;
@@ -109,6 +111,7 @@ void GameEngine::execute_local()
 		show_time(start);
 		if (peekmessage(&msg, EX_CHAR))
 		{
+			flushmessage();
 			switch (msg.ch)
 			{
 			case 'a':
@@ -132,7 +135,11 @@ void GameEngine::execute_local()
 				break;
 			}
 
-			flushmessage();
+			if (msg.vkcode == VK_ESCAPE){
+				if (IDYES == MessageBox(NULL, _T("确定要退出吗？"), _T("提示"), MB_YESNO | MB_SYSTEMMODAL))
+					break; // 不玩了就退出
+			}
+			
 		}
 		baby.move();
 		if (baby.isDead())
@@ -183,6 +190,7 @@ void GameEngine::execute_local()
 
 	fout << 1 << ' ' << user << ' ' << baby.grade << endl;
 	fout.close(); // 操作完关闭文件
+	flushmessage();
 	closegraph();
 }
 
@@ -219,13 +227,13 @@ void GameEngine::readRecord(){
 		switch (edition)
 		{
 		case 1:
-			cout << "版本：入门版";
+			cout << "版本：经典版";
 			break;
 		case 2:
-			cout << "版本：进阶版";
+			cout << "版本：地形版";
 			break;
 		case 3:
-			cout << "版本：高级版";
+			cout << "版本：趣味版";
 			break;
 		}
 		cout << " 用户名：" << name << " 得分" << score << endl;
@@ -336,9 +344,9 @@ void GameEngine::help()
 	cout << "* 5分，葡萄10分，桃子20分，金苹果加50分。蛇吃食物吃多了有力气了会越 *" << endl;
 	cout << "* 爬越快，小心不要撞墙！                                            *" << endl;
 	cout << "*                              玩法                                 *" << endl;
-	cout << "* 1.入门版 经典版本，控制蛇吃食物得分，撞墙或咬到自己为死亡。       *" << endl;
-	cout << "* 2.进阶版 撞墙后蛇尸体会变成墙壁，游戏继续，死的时候可以选择退出。 *" << endl;
-	cout << "* 3.高级版 蛇有5条命，撞墙后不死，尸体变成食物，游戏继续。          *" << endl;
+	cout << "* 1.经典版 经典版本，控制蛇吃食物得分，撞墙或咬到自己为死亡。       *" << endl;
+	cout << "* 2.地形版 撞墙后蛇尸体会变成墙壁，游戏继续，死的时候可以选择退出。 *" << endl;
+	cout << "* 3.趣味版 蛇有5条命，撞墙后不死，尸体变成食物，游戏继续。          *" << endl;
 	cout << "*                                                                   *" << endl;
 	cout << "*********************************************************************" << endl;
 
