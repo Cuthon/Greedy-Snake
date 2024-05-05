@@ -11,5 +11,6 @@ include_directories(${PROJECT_ROOT_PATH}/include)
 include_directories(${PROJECT_ROOT_PATH}/include/thirdpart)
 
 link_directories(${PROJECT_ROOT_PATH}/lib)
+link_directories(C:/TDM-GCC-64/x86_64-w64-mingw32/lib)
 
 ADD_SUBDIRECTORY(src)

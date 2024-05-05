@@ -13,7 +13,7 @@ public:
 	int grade;						//当前得分
 	snake(direct, int);
 	void init();					//初始化蛇
-	void move();					//控制蛇的移动
+	int move();						//控制蛇的移动
 	void redirect(direct);			//改变蛇头朝向	
 	bool isDead();					//判断是否死亡
 	bool eatFood();					//判断是否吃到食物
@@ -29,9 +29,12 @@ private:
 	double speed;					//前进速度
 	double accFactor;				//加速倍率
 	std::deque <location> body;		//蛇身队列
-	void update(const location&);
+	int update(const location&);
+	void drawHead(const location&);
 	void drawBody(const location&);
+	void drawTail(const location&);
 	void clearBody(const location&);
+	bool is_snake(int, int);
 	bool reInit();					//重新生成蛇
 };
 

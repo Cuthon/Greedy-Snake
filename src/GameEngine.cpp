@@ -10,6 +10,7 @@
 #include <fstream>
 #include <conio.h>
 #include <Windows.h>
+#include <mmsystem.h>
 #include <graphics.h>
 
 using namespace std;
@@ -21,6 +22,10 @@ GameEngine* GameEngine::GetInstance(){
 		_instance = new GameEngine(0);
 	}
 	return _instance;
+}
+
+GameEngine::GameEngine(int cond): state(cond){
+	drawer::GetInstance()->loadImgs();
 }
 
 void GameEngine::Destory(){
@@ -51,138 +56,8 @@ int GameEngine::Menu()
 	return state;
 }
 
-void GameEngine::test()
-{
-	// ExMessage msg;
-
-	char user[21];
-	cout << "请输入您的用户名，不超过20个字符：";
-	cin >> user;
-	// ofstream fout("history.dat", ios::app | ios::binary);
-
-	initgraph(COL + 300, ROW + 20);
-	// drawUI();
-	// switch (state)
-	// {
-	// case 1:
-	// 	outtextxy(COL + 40, 50, _T("当前版本：经典版"));
-	// 	break;
-	// case 2:
-	// 	outtextxy(COL + 40, 50, _T("当前版本：地形版"));
-	// 	break;
-	// case 3:
-	// 	outtextxy(COL + 40, 50, _T("当前版本：趣味版"));
-	// 	break;
-	// default:
-	// 	break;
-	// }
-
-	// outtextxy(COL + 40, 250, _T("历史最高分："));
-	// int best = bestScore(state); // 获取当前版本的最高分
-	// drawScore(best);			 // 将最高分在屏幕上输出
-
-	// Map.initWall();
-	// snake baby(RIGHT, 3);
-	// baby.init();
-	// baby.show();
-
-	// int num = Snack.newFood();
-	// int eaten = 0;
-	// int death = 0;
-
-	// clock_t start = clock();
-	// while (0)
-	// {
-	// 	show_time(start);
-	// 	if (peekmessage(&msg, EX_CHAR))
-	// 	{
-	// 		flushmessage();
-	// 		switch (msg.ch)
-	// 		{
-	// 		case 'a':
-	// 		case 'A':
-	// 			baby.redirect(LEFT);
-	// 			break;
-
-	// 		case 's':
-	// 		case 'S':
-	// 			baby.redirect(DOWN);
-	// 			break;
-
-	// 		case 'd':
-	// 		case 'D':
-	// 			baby.redirect(RIGHT);
-	// 			break;
-
-	// 		case 'w':
-	// 		case 'W':
-	// 			baby.redirect(UP);
-	// 			break;
-	// 		}
-
-	// 		if (msg.vkcode == VK_ESCAPE){
-	// 			if (IDYES == MessageBox(NULL, _T("确定要退出吗？"), _T("提示"), MB_YESNO | MB_SYSTEMMODAL))
-	// 				break; // 不玩了就退出
-	// 		}
-			
-	// 	}
-	// 	baby.move();
-	// 	if (baby.isDead())
-	// 	{
-	// 		if (state == 1)
-	// 			break;
-	// 		else if (state == 2)
-	// 		{
-	// 			Snack.renew();
-	// 			eaten = 0;
-	// 			num = 1;
-	// 			if (!baby.beWall())
-	// 				break; // 没有空间了，游戏结束
-	// 			if (IDNO == MessageBox(NULL, _T("你撞死了，尸体将会变成墙，还要继续玩吗？"), _T("提示"), MB_YESNO | MB_SYSTEMMODAL))
-	// 				break; // 不玩了就退出
-	// 		}
-	// 		else if (state == 3)
-	// 		{
-	// 			death++;
-	// 			TCHAR life = 5 - death + 48;
-	// 			outtextxy(COL + 184, 200, life);
-
-	// 			Snack.renew(); // 重设食物位置
-	// 			eaten = 0;
-	// 			num = 1 + baby.snakelen();		  // 蛇身都变成食物了，再加上生成的一个食物
-	// 			if (!baby.beFood() || death >= 5) // 没有空间或者撞墙超过5次了，游戏结束
-	// 				break;
-	// 		}
-	// 	}
-
-	// 	if (baby.eatFood())
-	// 	{
-	// 		eaten++; // 每吃掉一个食物计数器就+1
-	// 		if (eaten >= num)
-	// 		{
-	// 			num = Snack.newFood(); // 如果食物吃完才生成新食物
-	// 			eaten = 0;			   // 吃食计数器归零
-	// 		}
-	// 		baby.show();
-	// 	}
-
-	// 	if (baby.grade > best)
-	// 		drawScore(baby.grade); // 历史最高分随当前得分同步
-	// 	Sleep(1000 / baby.getSpeed());
-	// }
-
-	// showInform(baby.grade);
-
-	// fout << 1 << ' ' << user << ' ' << baby.grade << endl;
-	// fout.close(); // 操作完关闭文件
-	// flushmessage();
-	cleardevice();
-	_getch();
-	closegraph();
-}
-
 void GameEngine::Execute(){
-	drawer::GetInstance()->loadImgs();
+	
 	switch(state){
 		case 1:
 		case 2:
@@ -210,6 +85,7 @@ void GameEngine::execute_local()
 	ofstream fout("history.dat", ios::app | ios::binary);
 
 	initgraph(COL + 300, ROW + 20, EX_SHOWCONSOLE);
+	PlaySoundA("../sound/default.wav", NULL, SND_FILENAME|SND_ASYNC|SND_LOOP);
 	drawUI();
 	switch (state)
 	{
@@ -275,8 +151,20 @@ void GameEngine::execute_local()
 			}
 			
 		}
-		baby.move();
-		if (baby.isDead())
+		int res = baby.move();
+
+		if (res == 1)			// res==1说明吃到了食物
+		{
+			eaten++; // 每吃掉一个食物计数器就+1
+			if (eaten >= num)
+			{
+				num = Snack.newFood(); // 如果食物吃完才生成新食物
+				eaten = 0;			   // 吃食计数器归零
+			}
+			baby.show();
+		}
+
+		if (res == 2)			// res==2说明移动后死亡
 		{
 			if (state == 1)
 				break;
@@ -302,17 +190,6 @@ void GameEngine::execute_local()
 				if (!baby.beFood() || death >= 5) // 没有空间或者撞墙超过5次了，游戏结束
 					break;
 			}
-		}
-
-		if (baby.eatFood())
-		{
-			eaten++; // 每吃掉一个食物计数器就+1
-			if (eaten >= num)
-			{
-				num = Snack.newFood(); // 如果食物吃完才生成新食物
-				eaten = 0;			   // 吃食计数器归零
-			}
-			baby.show();
 		}
 
 		if (baby.grade > best)
