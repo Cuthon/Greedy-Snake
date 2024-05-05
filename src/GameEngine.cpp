@@ -10,6 +10,7 @@
 #include <fstream>
 #include <conio.h>
 #include <Windows.h>
+#include <mmsystem.h>
 #include <graphics.h>
 
 using namespace std;
@@ -21,6 +22,10 @@ GameEngine* GameEngine::GetInstance(){
 		_instance = new GameEngine(0);
 	}
 	return _instance;
+}
+
+GameEngine::GameEngine(int cond): state(cond){
+	drawer::GetInstance()->loadImgs();
 }
 
 void GameEngine::Destory(){
@@ -182,7 +187,7 @@ void GameEngine::test()
 }
 
 void GameEngine::Execute(){
-	drawer::GetInstance()->loadImgs();
+	
 	switch(state){
 		case 1:
 		case 2:
@@ -210,6 +215,7 @@ void GameEngine::execute_local()
 	ofstream fout("history.dat", ios::app | ios::binary);
 
 	initgraph(COL + 300, ROW + 20, EX_SHOWCONSOLE);
+	PlaySoundA("../sound/default.wav", NULL, SND_FILENAME|SND_ASYNC|SND_LOOP);
 	drawUI();
 	switch (state)
 	{
@@ -275,8 +281,20 @@ void GameEngine::execute_local()
 			}
 			
 		}
-		baby.move();
-		if (baby.isDead())
+		int res = baby.move();
+
+		if (res == 1)			// res==1说明吃到了食物
+		{
+			eaten++; // 每吃掉一个食物计数器就+1
+			if (eaten >= num)
+			{
+				num = Snack.newFood(); // 如果食物吃完才生成新食物
+				eaten = 0;			   // 吃食计数器归零
+			}
+			baby.show();
+		}
+
+		if (res == 2)			// res==2说明移动后死亡
 		{
 			if (state == 1)
 				break;
@@ -302,17 +320,6 @@ void GameEngine::execute_local()
 				if (!baby.beFood() || death >= 5) // 没有空间或者撞墙超过5次了，游戏结束
 					break;
 			}
-		}
-
-		if (baby.eatFood())
-		{
-			eaten++; // 每吃掉一个食物计数器就+1
-			if (eaten >= num)
-			{
-				num = Snack.newFood(); // 如果食物吃完才生成新食物
-				eaten = 0;			   // 吃食计数器归零
-			}
-			baby.show();
 		}
 
 		if (baby.grade > best)

@@ -1,6 +1,7 @@
 #include "snake.h"
 #include "food.h"
 #include "wall.h"
+#include "drawer.h"
 
 #include <time.h>
 #include <iostream>
@@ -24,7 +25,7 @@ void snake::init()
 	here.y = ROW / 2 - SCALE/2;
 	body.push_front(here);
 	Map.setCondit(here.x, here.y, SNAKE_TAIL);
-	drawBody(here);
+	drawTail(here);
 
 	for (int i = 1; i < length-1; ++i) {
 		here.x += SCALE;
@@ -35,30 +36,32 @@ void snake::init()
 	here.x += SCALE;
 	body.push_front(here);
 	Map.setCondit(here.x, here.y, SNAKE_HEAD);
-	drawBody(here);
+	drawHead(here);
 }
 
-void snake::move()
+int snake::move()
 {
+	int res = 0;
 	location now = body.front();	//获取蛇头位置
 	switch (toward) {	
 	case LEFT:
 		now.x -= SCALE;
-		update(now);				//更新当前状态
+		res = update(now);			//更新当前状态
 		break;
 	case RIGHT:
 		now.x += SCALE;
-		update(now);
+		res = update(now);
 		break;
 	case UP:
 		now.y -= SCALE;
-		update(now);
+		res = update(now);
 		break;
 	case DOWN:
 		now.y += SCALE;
-		update(now);
+		res = update(now);
 		break;
 	}
+	return res;
 }
 
 void snake::redirect(direct t)
@@ -81,7 +84,7 @@ bool snake::isDead()
 {
 	bool dead = false;
 	location head = body.front();
-	for (size_t i = 1; i < body.size(); i++) {
+	for (size_t i = 1; i < body.size()-1; i++) {
 		if (head.x == body[i].x && head.y == body[i].y) {
 			dead = true;
 			body.pop_front();	//此处蛇头与某段身体已经重合，应去掉
@@ -147,21 +150,94 @@ bool snake::beFood()
 {
 	for (size_t i = 0; i < body.size(); ++i) {
 		Map.setCondit(body[i].x, body[i].y, APPLE);	//将这个位置设置为食物(最低分的苹果)
-		setfillcolor(RED);
-		clearrectangle(body[i].x - SCALE/2, body[i].y - SCALE/2, body[i].x + SCALE/2, body[i].y + SCALE/2);
-		solidcircle(body[i].x, body[i].y, SCALE/2);		//将食物在地图上画出来
+		clearBody(body[i]);
+		transparentimage(body[i].x - SCALE/2, body[i].y - SCALE/2, 
+			drawer::GetInstance()->imgMap["Item_apple"]);		//将食物在地图上画出来
 	}
 	bool flag = reInit();
 	return flag;
 }
 
+bool snake::is_snake(int x, int y){
+	return Map.getCondit(x, y) >= SNAKE_HEAD && Map.getCondit(x, y) <= SNAKE_TAIL;
+}
 
 /*以下是私有部分*/
+void snake::drawHead(const location& here)
+{
+	clearBody(here);
+	switch (toward)
+	{
+	case LEFT: 
+		transparentimage(here.x - SCALE/2, here.y - SCALE/2, drawer::GetInstance()->imgMap["head_left"]);
+		break;
+	case RIGHT:
+		transparentimage(here.x - SCALE/2, here.y - SCALE/2, drawer::GetInstance()->imgMap["head_right"]);
+		break;
+	case UP:
+		transparentimage(here.x - SCALE/2, here.y - SCALE/2, drawer::GetInstance()->imgMap["head_up"]);
+		break;
+	case DOWN:
+		transparentimage(here.x - SCALE/2, here.y - SCALE/2, drawer::GetInstance()->imgMap["head_down"]);
+		break;
+	}
+}
+
 void snake::drawBody(const location& here)
 {
-	setfillcolor(YELLOW);
-	setlinecolor(RED);
-	fillrectangle(here.x - SCALE/2, here.y - SCALE/2, here.x + SCALE/2, here.y + SCALE/2);
+	// setfillcolor(YELLOW);
+	// setlinecolor(RED);
+	// fillrectangle(here.x - SCALE/2, here.y - SCALE/2, here.x + SCALE/2, here.y + SCALE/2);
+	clearBody(here);
+	if (body[1].x == here.x && body[1].y == here.y){
+		location front = body[0];
+		location next = body[2];
+		if(front.y == here.y && here.y == next.y){
+			transparentimage(here.x - SCALE/2, here.y - SCALE/2, drawer::GetInstance()->imgMap["body_horizen"]);
+		}
+		else if(front.x == here.x && here.x == next.x){
+			transparentimage(here.x - SCALE/2, here.y - SCALE/2, drawer::GetInstance()->imgMap["body_vert"]);
+		}
+		else if((toward==DOWN && next.x<here.x) || (toward==LEFT && next.y>here.y)){
+			transparentimage(here.x - SCALE/2, here.y - SCALE/2, drawer::GetInstance()->imgMap["turn_ru"]);
+		}
+		else if((toward==UP && next.x<here.x) || (toward==LEFT && next.y<here.y)){
+			transparentimage(here.x - SCALE/2, here.y - SCALE/2, drawer::GetInstance()->imgMap["turn_rd"]);
+		}
+		else if((toward==UP && next.x>here.x) || (toward==RIGHT && next.y<here.y)){
+			transparentimage(here.x - SCALE/2, here.y - SCALE/2, drawer::GetInstance()->imgMap["turn_ld"]);
+		}
+		else if((toward==DOWN && next.x>here.x) || (toward==RIGHT && next.y>here.y)){
+			transparentimage(here.x - SCALE/2, here.y - SCALE/2, drawer::GetInstance()->imgMap["turn_lu"]);
+		}
+			
+	}
+	else{
+		transparentimage(here.x - SCALE/2, here.y - SCALE/2, drawer::GetInstance()->imgMap["body_horizen"]);
+	}
+}
+
+void snake::drawTail(const location& here){
+	clearBody(here);
+	if (body.size()>1){
+		int pos = body.size()-1;
+		location front = body[pos-1];
+		if(front.x == here.x-SCALE && front.y == here.y){
+			transparentimage(here.x - SCALE/2, here.y - SCALE/2, drawer::GetInstance()->imgMap["tail_r"]);
+		}
+		else if(front.x == here.x+SCALE && front.y == here.y){
+			transparentimage(here.x - SCALE/2, here.y - SCALE/2, drawer::GetInstance()->imgMap["tail_l"]);
+		}
+		else if(front.x == here.x && front.y == here.y+SCALE){
+			transparentimage(here.x - SCALE/2, here.y - SCALE/2, drawer::GetInstance()->imgMap["tail_u"]);
+		}
+		else if(front.x == here.x && front.y == here.y-SCALE){
+			transparentimage(here.x - SCALE/2, here.y - SCALE/2, drawer::GetInstance()->imgMap["tail_d"]);
+		}
+	}
+	else{
+		transparentimage(here.x - SCALE/2, here.y - SCALE/2, drawer::GetInstance()->imgMap["tail_l"]);
+	}
 }
 
 void snake::clearBody(const location& here)
@@ -170,33 +246,45 @@ void snake::clearBody(const location& here)
 }
 
 /*比较重要的函数，更新蛇身队列*/
-void snake::update(const location& now)
+int snake::update(const location& now)
 {
-	body.push_front(now);				//蛇身队列中增加蛇头
+	int res = 0;
+	Map.setCondit(body.front().x, body.front().y, SNAKE_BODY);		// 先前的蛇头变为蛇身
+	body.push_front(now);							// 蛇身队列中增加蛇头位置
 
-	if (Map.getCondit(now.x, now.y) != WALL)	//撞墙死的情况单独考虑
+	/*判断蛇头位置情况*/
+	if (!isDead())	// 不死才进行处理
 	{
 		if (Map.getCondit(now.x, now.y) >= SNAKE_HEAD && Map.getCondit(now.x, now.y) <= SNAKE_TAIL) {
+			// 进入此处说明当前蛇头位置与未更新的蛇身重合
 			location tail = body.back();
 			if (now.x == tail.x && now.y == tail.y) {	//如果刚好要咬到尾巴不算死亡			
 				body.pop_back();						//队列层面清除蛇尾以防后面判断错误		
 			}
-			else return;				//不是尾巴就死了，退出函数
+			else return res = 2;				//不是尾巴就死了，退出函数
 		}
 
 		else {
-			drawBody(now);					//画新蛇头
-
-			if (Map.getCondit(now.x, now.y) < APPLE) {	//没吃到食物时才执行以下操作		
-				Map.setCondit(now.x, now.y, SNAKE_HEAD);		//蛇头设置为SNAKE状态
-				location tail = body.back();
-				clearBody(tail);						//屏幕显示方面清除蛇尾
-				body.pop_back();						//队列层面清除蛇尾		
-				Map.setCondit(tail.x, tail.y, EMPTY);	//地图方块层面清除蛇尾
+			if (!eatFood()) {			// 没吃到食物时才执行以下操作
+				Map.setCondit(now.x, now.y, SNAKE_HEAD);		// 蛇头设置为SNAKE状态		
+				location tail = body.back();		
+				clearBody(tail);								//屏幕显示方面清除蛇尾
+				body.pop_back();								//队列层面清除蛇尾		
+				Map.setCondit(tail.x, tail.y, EMPTY);			//地图方块层面清除蛇尾
 				Map.setCondit(body.back().x, body.back().y, SNAKE_TAIL);	
+				drawTail(body.back());							// 画新蛇尾
 			}
+			else res = 1;
 		}
+
+		drawBody(body[1]);							// 画新蛇身
+		drawHead(now);								// 画新蛇头
 	}
+	else{
+		res = 2;
+	}
+
+	return res;
 }
 
 /*用于进阶模式蛇的重新生成*/
@@ -223,12 +311,12 @@ bool snake::reInit()
 		if (Map.getCondit(pos.x, pos.y) == EMPTY && Map.getCondit(pos.x + SCALE, pos.y) == EMPTY) {
 			Map.setCondit(pos.x, pos.y, SNAKE_TAIL);
 			body.push_front(pos);
-			drawBody(pos);
+			drawTail(pos);
 
 			pos.x += SCALE;
 			Map.setCondit(pos.x, pos.y, SNAKE_HEAD);
 			body.push_front(pos);
-			drawBody(pos);
+			drawHead(pos);
 			break;
 		}
 		else protect++;
