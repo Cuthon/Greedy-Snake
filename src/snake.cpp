@@ -20,18 +20,22 @@ snake::snake(direct t,int len):toward(t),length(len)
 void snake::init()
 {
 	location here;
-	here.x = COL / 2 - 5;
-	here.y = ROW / 2 - 5;
+	here.x = COL / 2 - SCALE/2;
+	here.y = ROW / 2 - SCALE/2;
 	body.push_front(here);
+	Map.setCondit(here.x, here.y, SNAKE_TAIL);
 	drawBody(here);
-	Map.setCondit(here.x, here.y, SNAKE);
 
-	for (int i = 1; i < length; ++i) {
-		here.x += 10;
-		drawBody(here);
+	for (int i = 1; i < length-1; ++i) {
+		here.x += SCALE;
 		body.push_front(here);
-		Map.setCondit(here.x, here.y, SNAKE);
+		Map.setCondit(here.x, here.y, SNAKE_BODY);
+		drawBody(here);
 	}
+	here.x += SCALE;
+	body.push_front(here);
+	Map.setCondit(here.x, here.y, SNAKE_HEAD);
+	drawBody(here);
 }
 
 void snake::move()
@@ -39,19 +43,19 @@ void snake::move()
 	location now = body.front();	//获取蛇头位置
 	switch (toward) {	
 	case LEFT:
-		now.x -= 10;
+		now.x -= SCALE;
 		update(now);				//更新当前状态
 		break;
 	case RIGHT:
-		now.x += 10;
+		now.x += SCALE;
 		update(now);
 		break;
 	case UP:
-		now.y -= 10;
+		now.y -= SCALE;
 		update(now);
 		break;
 	case DOWN:
-		now.y += 10;
+		now.y += SCALE;
 		update(now);
 		break;
 	}
@@ -101,10 +105,10 @@ bool snake::eatFood()
 		switch (Map.getCondit(head.x, head.y)) {
 		case APPLE:grade += 5; break;
 		case GRAPE:grade += 10; break;
-		case PEACH:grade += 20; break;
+		case CHICKEN:grade += 20; break;
 		case GOLDAP:grade += 50; break;
 		}
-		Map.setCondit(head.x, head.y, SNAKE);		//把头的位置设置为蛇表示吃了食物
+		Map.setCondit(head.x, head.y, SNAKE_HEAD);		//把头的位置设置为蛇表示吃了食物
 		return true;
 	}
 	else return false;
@@ -144,8 +148,8 @@ bool snake::beFood()
 	for (size_t i = 0; i < body.size(); ++i) {
 		Map.setCondit(body[i].x, body[i].y, APPLE);	//将这个位置设置为食物(最低分的苹果)
 		setfillcolor(RED);
-		clearrectangle(body[i].x - 5, body[i].y - 5, body[i].x + 5, body[i].y + 5);
-		solidcircle(body[i].x, body[i].y, 5);		//将食物在地图上画出来
+		clearrectangle(body[i].x - SCALE/2, body[i].y - SCALE/2, body[i].x + SCALE/2, body[i].y + SCALE/2);
+		solidcircle(body[i].x, body[i].y, SCALE/2);		//将食物在地图上画出来
 	}
 	bool flag = reInit();
 	return flag;
@@ -157,12 +161,12 @@ void snake::drawBody(const location& here)
 {
 	setfillcolor(YELLOW);
 	setlinecolor(RED);
-	fillrectangle(here.x - 5, here.y - 5, here.x + 5, here.y + 5);
+	fillrectangle(here.x - SCALE/2, here.y - SCALE/2, here.x + SCALE/2, here.y + SCALE/2);
 }
 
 void snake::clearBody(const location& here)
 {
-	clearrectangle(here.x - 5, here.y - 5, here.x + 5, here.y + 5);
+	clearrectangle(here.x - SCALE/2, here.y - SCALE/2, here.x + SCALE/2, here.y + SCALE/2);
 }
 
 /*比较重要的函数，更新蛇身队列*/
@@ -172,7 +176,7 @@ void snake::update(const location& now)
 
 	if (Map.getCondit(now.x, now.y) != WALL)	//撞墙死的情况单独考虑
 	{
-		if (Map.getCondit(now.x, now.y) == SNAKE) {
+		if (Map.getCondit(now.x, now.y) >= SNAKE_HEAD && Map.getCondit(now.x, now.y) <= SNAKE_TAIL) {
 			location tail = body.back();
 			if (now.x == tail.x && now.y == tail.y) {	//如果刚好要咬到尾巴不算死亡			
 				body.pop_back();						//队列层面清除蛇尾以防后面判断错误		
@@ -184,11 +188,12 @@ void snake::update(const location& now)
 			drawBody(now);					//画新蛇头
 
 			if (Map.getCondit(now.x, now.y) < APPLE) {	//没吃到食物时才执行以下操作		
-				Map.setCondit(now.x, now.y, SNAKE);		//蛇头设置为SNAKE状态
+				Map.setCondit(now.x, now.y, SNAKE_HEAD);		//蛇头设置为SNAKE状态
 				location tail = body.back();
 				clearBody(tail);						//屏幕显示方面清除蛇尾
 				body.pop_back();						//队列层面清除蛇尾		
 				Map.setCondit(tail.x, tail.y, EMPTY);	//地图方块层面清除蛇尾
+				Map.setCondit(body.back().x, body.back().y, SNAKE_TAIL);	
 			}
 		}
 	}
@@ -207,23 +212,23 @@ bool snake::reInit()
 		body.pop_back();
 	}
 	srand((unsigned)time(0));
-	location head;
+	location pos;
 
 	int protect = 0;
 	while (protect < 500) {
-		int X = rand() % (COL / 10);
-		int Y = rand() % (ROW / 10);
-		head.x = 10 * X + 5;
-		head.y = 10 * Y + 5;
-		if (Map.getCondit(head.x, head.y) == EMPTY && Map.getCondit(head.x + 10, head.y) == EMPTY) {
-			Map.setCondit(head.x, head.y, SNAKE);
-			body.push_front(head);
-			drawBody(head);
+		int X = rand() % (COL / SCALE);
+		int Y = rand() % (ROW / SCALE);
+		pos.x = SCALE * X + SCALE/2;
+		pos.y = SCALE * Y + SCALE/2;
+		if (Map.getCondit(pos.x, pos.y) == EMPTY && Map.getCondit(pos.x + SCALE, pos.y) == EMPTY) {
+			Map.setCondit(pos.x, pos.y, SNAKE_TAIL);
+			body.push_front(pos);
+			drawBody(pos);
 
-			head.x += 10;
-			Map.setCondit(head.x, head.y, SNAKE);
-			body.push_front(head);
-			drawBody(head);
+			pos.x += SCALE;
+			Map.setCondit(pos.x, pos.y, SNAKE_HEAD);
+			body.push_front(pos);
+			drawBody(pos);
 			break;
 		}
 		else protect++;

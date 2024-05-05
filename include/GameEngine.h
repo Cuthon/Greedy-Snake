@@ -13,6 +13,7 @@ public:
 private:
     static GameEngine* _instance;
     GameEngine(int cond): state(cond){}
+    void test();
 
     void execute_local();
     void readRecord();

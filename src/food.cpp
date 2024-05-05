@@ -1,6 +1,7 @@
 #include "food.h"
 #include "wall.h"
 #include "snake.h"
+#include "drawer.h"
 
 #include <stdlib.h>
 #include <time.h>
@@ -15,13 +16,13 @@ int food::newFood()
 	int i = 0;
 	while (i < fcount)
 	{
-		int X = rand() % (COL / 10);
-		int Y = rand() % (ROW / 10);
+		int X = rand() % (COL / SCALE);
+		int Y = rand() % (ROW / SCALE);
 		//数组下标与地图坐标有转换关系,先转换成地图坐标
-		if (Map.getCondit(10 * X + 5, 10 * Y + 5) == EMPTY) {		
+		if (Map.getCondit(SCALE * X + SCALE/2, SCALE * Y + SCALE/2) == EMPTY) {		
 			//如果该位置为空，则生成食物
-			place.x = 10 * X + 5;
-			place.y = 10 * Y + 5;
+			place.x = SCALE * X + SCALE/2;
+			place.y = SCALE * Y + SCALE/2;
 			setSpecies();
 			drawFood();			
 			++i;
@@ -33,23 +34,23 @@ int food::newFood()
 void food::renew()
 {
 	//先清除现有食物
-	for (int i = 0; i < ROW / 10; ++i) {
-		for (int j = 0; j < COL / 10; ++j) {
+	for (int i = 0; i < ROW / SCALE; ++i) {
+		for (int j = 0; j < COL / SCALE; ++j) {
 			if (Map.gameMap[i][j] >= APPLE) {
 				Map.gameMap[i][j] = EMPTY;
-				clearcircle(10 * j + 5, 10 * i + 5, 5);
+				clearcircle(SCALE * j + SCALE/2, SCALE * i + SCALE/2, SCALE/2);
 			}
 		}
 	}
 	srand((unsigned)time(0));
 	while (1) {
-		int X = rand() % (COL / 10);
-		int Y = rand() % (ROW / 10);
+		int X = rand() % (COL / SCALE);
+		int Y = rand() % (ROW / SCALE);
 		//数组下标与地图坐标有转换关系,先转换成地图坐标
-		if (Map.getCondit(10 * X + 5, 10 * Y + 5) == EMPTY) {
+		if (Map.getCondit(SCALE * X + SCALE/2, SCALE * Y + SCALE/2) == EMPTY) {
 			//如果该位置为空，则生成食物
-			place.x = 10 * X + 5;
-			place.y = 10 * Y + 5;
+			place.x = SCALE * X + SCALE/2;
+			place.y = SCALE * Y + SCALE/2;
 			setSpecies();
 			drawFood();
 			break;
@@ -57,16 +58,26 @@ void food::renew()
 	}
 }
 
+
 //私有部分
 void food::drawFood()
 {
+	IMAGE item;
 	switch (fscore) {
-	case 5: setfillcolor(RED); break;
-	case 10:setfillcolor(RGB(165, 110, 255)); break;
-	case 20:setfillcolor(RGB(234, 100, 139)); break;
-	case 50:setfillcolor(RGB(250, 196, 39)); break;
+	case 5: 
+	item = drawer::GetInstance()->imgMap["Item_apple"];
+	break;
+	case 10:
+	item = drawer::GetInstance()->imgMap["Item_purple"];
+	break;
+	case 20:
+	item = drawer::GetInstance()->imgMap["Item_chiken"];
+	break;
+	case 50:
+	item = drawer::GetInstance()->imgMap["Item_gapp"];
+	break;
 	}
-	solidcircle(place.x, place.y, 5);
+	transparentimage(place.x-SCALE/2, place.y-SCALE/2, item);
 }
 
 void food::setSpecies()
@@ -82,7 +93,7 @@ void food::setSpecies()
 	}
 	else if (temp <= 95) {
 		fscore = 20;					//生成20分的桃子
-		Map.setCondit(place.x, place.y, PEACH);
+		Map.setCondit(place.x, place.y, CHICKEN);
 	}
 	else if (temp <= 100) {
 		fscore = 50;					//生成50分的金苹果
