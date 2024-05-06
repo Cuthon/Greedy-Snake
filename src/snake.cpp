@@ -148,11 +148,10 @@ bool snake::beWall()
 
 bool snake::beFood()
 {
+	Snack.clearFood();
 	for (size_t i = 0; i < body.size(); ++i) {
-		Map.setCondit(body[i].x, body[i].y, APPLE);	//将这个位置设置为食物(最低分的苹果)
-		clearBody(body[i]);
-		transparentimage(body[i].x - SCALE/2, body[i].y - SCALE/2, 
-			drawer::GetInstance()->imgMap["Item_apple"]);		//将食物在地图上画出来
+		Map.clearBlock(body[i]);
+		Snack.bag.push_back(food(body[i]));
 	}
 	bool flag = reInit();
 	return flag;
@@ -165,7 +164,7 @@ bool snake::is_snake(int x, int y){
 /*以下是私有部分*/
 void snake::drawHead(const location& here)
 {
-	clearBody(here);
+	Map.clearBlock(here);
 	switch (toward)
 	{
 	case LEFT: 
@@ -188,7 +187,7 @@ void snake::drawBody(const location& here)
 	// setfillcolor(YELLOW);
 	// setlinecolor(RED);
 	// fillrectangle(here.x - SCALE/2, here.y - SCALE/2, here.x + SCALE/2, here.y + SCALE/2);
-	clearBody(here);
+	Map.clearBlock(here);
 	if (body[1].x == here.x && body[1].y == here.y){
 		location front = body[0];
 		location next = body[2];
@@ -218,7 +217,7 @@ void snake::drawBody(const location& here)
 }
 
 void snake::drawTail(const location& here){
-	clearBody(here);
+	Map.clearBlock(here);
 	if (body.size()>1){
 		int pos = body.size()-1;
 		location front = body[pos-1];
@@ -240,11 +239,6 @@ void snake::drawTail(const location& here){
 	}
 }
 
-void snake::clearBody(const location& here)
-{
-	clearrectangle(here.x - SCALE/2, here.y - SCALE/2, here.x + SCALE/2, here.y + SCALE/2);
-}
-
 /*比较重要的函数，更新蛇身队列*/
 int snake::update(const location& now)
 {
@@ -255,7 +249,7 @@ int snake::update(const location& now)
 	/*判断蛇头位置情况*/
 	if (!isDead())	// 不死才进行处理
 	{
-		if (Map.getCondit(now.x, now.y) >= SNAKE_HEAD && Map.getCondit(now.x, now.y) <= SNAKE_TAIL) {
+		if (is_snake(now.x, now.y)) {
 			// 进入此处说明当前蛇头位置与未更新的蛇身重合
 			location tail = body.back();
 			if (now.x == tail.x && now.y == tail.y) {	//如果刚好要咬到尾巴不算死亡			
@@ -268,7 +262,7 @@ int snake::update(const location& now)
 			if (!eatFood()) {			// 没吃到食物时才执行以下操作
 				Map.setCondit(now.x, now.y, SNAKE_HEAD);		// 蛇头设置为SNAKE状态		
 				location tail = body.back();		
-				clearBody(tail);								//屏幕显示方面清除蛇尾
+				Map.clearBlock(tail);								//屏幕显示方面清除蛇尾
 				body.pop_back();								//队列层面清除蛇尾		
 				Map.setCondit(tail.x, tail.y, EMPTY);			//地图方块层面清除蛇尾
 				Map.setCondit(body.back().x, body.back().y, SNAKE_TAIL);	

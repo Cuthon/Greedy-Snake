@@ -7,9 +7,12 @@
 #include <time.h>
 #include <graphics.h>
 
-food Snack;
+SnackBag Snack;
 
-int food::newFood()
+food::food(location& loc, condit cond, int fsc):
+place(loc), species(cond), fscore(fsc){}
+
+int SnackBag::newFood()
 {
 	srand((unsigned)time(0));
 	int fcount = rand() % 5 + 1;
@@ -19,84 +22,78 @@ int food::newFood()
 		int X = rand() % (COL / SCALE);
 		int Y = rand() % (ROW / SCALE);
 		//数组下标与地图坐标有转换关系,先转换成地图坐标
-		if (Map.getCondit(SCALE * X + SCALE/2, SCALE * Y + SCALE/2) == EMPTY) {		
+		location temp(SCALE * X + SCALE/2, SCALE * Y + SCALE/2);
+		if (Map.getCondit(temp.x, temp.y) == EMPTY) {		
 			//如果该位置为空，则生成食物
-			place.x = SCALE * X + SCALE/2;
-			place.y = SCALE * Y + SCALE/2;
-			setSpecies();
-			drawFood();			
+			bag.push_back(food(temp));			
 			++i;
 		}
 	}
-	return fcount;
+	resetSpecies();
+	drawFood();
+	return size();
 }
 
-void food::renew()
+void SnackBag::clearFood()
 {
 	//先清除现有食物
-	for (int i = 0; i < ROW / SCALE; ++i) {
-		for (int j = 0; j < COL / SCALE; ++j) {
-			if (Map.gameMap[i][j] >= APPLE) {
-				Map.gameMap[i][j] = EMPTY;
-				clearcircle(SCALE * j + SCALE/2, SCALE * i + SCALE/2, SCALE/2);
-			}
+	for (auto it = bag.begin(); it != bag.end(); it++) {
+		if (Map.getCondit(it->place.x, it->place.y) >= APPLE) {
+			Map.setCondit(it->place.x, it->place.y, EMPTY);
+			Map.clearBlock(it->place);
 		}
 	}
-	srand((unsigned)time(0));
-	while (1) {
-		int X = rand() % (COL / SCALE);
-		int Y = rand() % (ROW / SCALE);
-		//数组下标与地图坐标有转换关系,先转换成地图坐标
-		if (Map.getCondit(SCALE * X + SCALE/2, SCALE * Y + SCALE/2) == EMPTY) {
-			//如果该位置为空，则生成食物
-			place.x = SCALE * X + SCALE/2;
-			place.y = SCALE * Y + SCALE/2;
-			setSpecies();
-			drawFood();
-			break;
-		}
-	}
+	bag.clear();
 }
 
+int SnackBag::size(){
+	return bag.size();
+}
 
 //私有部分
-void food::drawFood()
+void SnackBag::drawFood()
 {
-	IMAGE item;
-	switch (fscore) {
-	case 5: 
-	item = drawer::GetInstance()->imgMap["Item_apple"];
-	break;
-	case 10:
-	item = drawer::GetInstance()->imgMap["Item_purple"];
-	break;
-	case 20:
-	item = drawer::GetInstance()->imgMap["Item_chiken"];
-	break;
-	case 50:
-	item = drawer::GetInstance()->imgMap["Item_gapp"];
-	break;
+	for (auto it = bag.begin(); it != bag.end(); it++){
+		IMAGE item;
+		switch (it->species) {
+		case APPLE: 
+		item = drawer::GetInstance()->imgMap["Item_apple"];
+		break;
+		case GRAPE:
+		item = drawer::GetInstance()->imgMap["Item_purple"];
+		break;
+		case CHICKEN:
+		item = drawer::GetInstance()->imgMap["Item_chiken"];
+		break;
+		case GOLDAP:
+		item = drawer::GetInstance()->imgMap["Item_gapp"];
+		break;
+		}
+		transparentimage(it->place.x-SCALE/2, it->place.y-SCALE/2, item);
 	}
-	transparentimage(place.x-SCALE/2, place.y-SCALE/2, item);
 }
 
-void food::setSpecies()
+void SnackBag::resetSpecies()
 {
-	int temp = rand() % 100 + 1;		//生成1-100的随机数
-	if (temp <= 50) {
-		fscore = 5;						//生成5分的苹果
-		Map.setCondit(place.x, place.y, APPLE);
-	}		
-	else if (temp <= 85) {
-		fscore = 10;					//生成10分的葡萄
-		Map.setCondit(place.x, place.y, GRAPE);
+	for (auto it = bag.begin(); it != bag.end(); it++){
+		int temp = rand() % 100 + 1;		// 生成1-100的随机数
+		if (temp <= 50) {
+			it->fscore = 5;
+			it->species = APPLE;			// 生成5分的苹果
+		}		
+		else if (temp <= 85) {
+			it->fscore = 10;
+			it->species = GRAPE;			// 生成10分的葡萄
+		}
+		else if (temp <= 95) {
+			it->fscore = 20;
+			it->species = CHICKEN;			// 生成20分的鸡腿
+		}
+		else if (temp <= 100) {
+			it->fscore = 50;
+			it->species = GOLDAP;			// 生成50分的金苹果
+		}
+		Map.setCondit(it->place.x, it->place.y, it->species);
 	}
-	else if (temp <= 95) {
-		fscore = 20;					//生成20分的桃子
-		Map.setCondit(place.x, place.y, CHICKEN);
-	}
-	else if (temp <= 100) {
-		fscore = 50;					//生成50分的金苹果
-		Map.setCondit(place.x, place.y, GOLDAP);
-	}
+	
 }

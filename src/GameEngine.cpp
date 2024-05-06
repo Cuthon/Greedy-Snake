@@ -11,6 +11,7 @@
 #include <conio.h>
 #include <Windows.h>
 #include <mmsystem.h>
+#include <unistd.h>
 #include <graphics.h>
 
 using namespace std;
@@ -26,6 +27,10 @@ GameEngine* GameEngine::GetInstance(){
 
 GameEngine::GameEngine(int cond): state(cond){
 	drawer::GetInstance()->loadImgs();
+	const char* wavFile = "../sound/default.wav";
+	if (access(wavFile, F_OK) == 0){
+		PlaySoundA(wavFile, NULL, SND_FILENAME|SND_ASYNC|SND_LOOP);
+	}
 }
 
 void GameEngine::Destory(){
@@ -35,21 +40,17 @@ void GameEngine::Destory(){
 	}
 }
 
-void GameEngine::SetState(int cond){
-	state = cond;
-}
-
 int GameEngine::Menu()
 {
 	system("cls");
-	cout << "*************** 贪吃蛇大作战 ***************" << endl;
-	cout << "*                 1.经典版                 *" << endl;
-	cout << "*                 2.地形版                 *" << endl;
-	cout << "*                 3.趣味版                 *" << endl;
-	cout << "*                 4.历史记录               *" << endl;
-	cout << "*                 5.游戏说明               *" << endl;
-	cout << "*                 0.退出游戏               *" << endl;
-	cout << "********************************************" << endl;
+	cout << "*************** 贪吃蛇大作战 ********************" << endl;
+	cout << "                 1.经典模式        	        " << endl;
+	cout << "                 2.生存模式         	        " << endl;
+	cout << "                 3.食尸鬼模式                  " << endl;
+	cout << "                 4.历史记录            	   	" << endl;
+	cout << "                 5.游戏说明         	   	   	" << endl;
+	cout << "                 0.退出游戏      				" << endl;
+	cout << "************************************************" << endl;
 	cout << "做出你的选择<0-5>:";
 	char choice = getchar();
 	state = choice - '0';
@@ -84,19 +85,19 @@ void GameEngine::execute_local()
 	cin >> user;
 	ofstream fout("history.dat", ios::app | ios::binary);
 
-	initgraph(COL + 300, ROW + 20, EX_SHOWCONSOLE);
-	PlaySoundA("../sound/default.wav", NULL, SND_FILENAME|SND_ASYNC|SND_LOOP);
+	initgraph(COL + 280, ROW);
+		
 	drawUI();
 	switch (state)
 	{
 	case 1:
-		outtextxy(COL + 40, 50, _T("当前版本：经典版"));
+		outtextxy(COL + 40, 50, _T("当前版本：经典模式"));
 		break;
 	case 2:
-		outtextxy(COL + 40, 50, _T("当前版本：地形版"));
+		outtextxy(COL + 40, 50, _T("当前版本：生存模式"));
 		break;
 	case 3:
-		outtextxy(COL + 40, 50, _T("当前版本：趣味版"));
+		outtextxy(COL + 40, 50, _T("当前版本：食尸鬼模式"));
 		break;
 	default:
 		break;
@@ -118,6 +119,7 @@ void GameEngine::execute_local()
 	clock_t start = clock();
 	while (1)
 	{
+		DWORD frame_start = GetTickCount();
 		show_time(start);
 		if (peekmessage(&msg, EX_CHAR))
 		{
@@ -158,6 +160,7 @@ void GameEngine::execute_local()
 			eaten++; // 每吃掉一个食物计数器就+1
 			if (eaten >= num)
 			{
+				Snack.clearFood();
 				num = Snack.newFood(); // 如果食物吃完才生成新食物
 				eaten = 0;			   // 吃食计数器归零
 			}
@@ -170,9 +173,9 @@ void GameEngine::execute_local()
 				break;
 			else if (state == 2)
 			{
-				Snack.renew();
+				Snack.clearFood();
+				num = Snack.newFood();
 				eaten = 0;
-				num = 1;
 				if (!baby.beWall())
 					break; // 没有空间了，游戏结束
 				if (IDNO == MessageBox(NULL, _T("你撞死了，尸体将会变成墙，还要继续玩吗？"), _T("提示"), MB_YESNO | MB_SYSTEMMODAL))
@@ -180,26 +183,33 @@ void GameEngine::execute_local()
 			}
 			else if (state == 3)
 			{
+				BeginBatchDraw();
 				death++;
 				TCHAR life = 5 - death + 48;
 				outtextxy(COL + 184, 200, life);
-
-				Snack.renew(); // 重设食物位置
-				eaten = 0;
-				num = 1 + baby.snakelen();		  // 蛇身都变成食物了，再加上生成的一个食物
+				
 				if (!baby.beFood() || death >= 5) // 没有空间或者撞墙超过5次了，游戏结束
 					break;
+				Snack.newFood();
+				FlushBatchDraw();
+				eaten = 0;
+				num = Snack.size();		  
+				EndBatchDraw();
 			}
 		}
 
 		if (baby.grade > best)
 			drawScore(baby.grade); // 历史最高分随当前得分同步
-		Sleep(1000 / baby.getSpeed());
+
+		DWORD frame_end = GetTickCount();
+		DWORD delta_time = frame_end - frame_start;
+		DWORD wait = (1000 / baby.getSpeed() - delta_time > 0 ? 1000 / baby.getSpeed() - delta_time : 0);
+		Sleep(wait);
 	}
 	cleardevice();
 	showInform(baby.grade);
 
-	fout << 1 << ' ' << user << ' ' << baby.grade << endl;
+	fout << state << ' ' << user << ' ' << baby.grade << endl;
 	fout.close(); // 操作完关闭文件
 	flushmessage();
 	
@@ -239,13 +249,13 @@ void GameEngine::readRecord(){
 		switch (edition)
 		{
 		case 1:
-			cout << "版本：经典版";
+			cout << "版本：经典模式";
 			break;
 		case 2:
-			cout << "版本：地形版";
+			cout << "版本：生存模式";
 			break;
 		case 3:
-			cout << "版本：趣味版";
+			cout << "版本：食尸鬼模式";
 			break;
 		}
 		cout << " 用户名：" << name << " 得分" << score << endl;
@@ -356,9 +366,9 @@ void GameEngine::help()
 	cout << "* 5分，葡萄10分，桃子20分，金苹果加50分。蛇吃食物吃多了有力气了会越 *" << endl;
 	cout << "* 爬越快，小心不要撞墙！                                            *" << endl;
 	cout << "*                              玩法                                 *" << endl;
-	cout << "* 1.经典版 经典版本，控制蛇吃食物得分，撞墙或咬到自己为死亡。       *" << endl;
-	cout << "* 2.地形版 撞墙后蛇尸体会变成墙壁，游戏继续，死的时候可以选择退出。 *" << endl;
-	cout << "* 3.趣味版 蛇有5条命，撞墙后不死，尸体变成食物，游戏继续。          *" << endl;
+	cout << "* 1.经典模式 经典版本，控制蛇吃食物得分，撞墙或咬到自己为死亡。       *" << endl;
+	cout << "* 2.生存模式 撞墙后蛇尸体会变成墙壁，游戏继续，死的时候可以选择退出。 *" << endl;
+	cout << "* 3.食尸鬼模式 蛇有5条命，撞墙后不死，尸体变成食物，游戏继续。          *" << endl;
 	cout << "*                                                                   *" << endl;
 	cout << "*********************************************************************" << endl;
 

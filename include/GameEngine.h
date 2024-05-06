@@ -6,7 +6,7 @@ class GameEngine{
 public:
     static GameEngine* GetInstance();
     static void Destory();
-    void SetState(int cond);
+    // void SetState(int cond);
     int Menu();
     void Execute();
 

@@ -29,6 +29,11 @@ void Wall::initWall()
 	}
 }
 
+void Wall::clearBlock(const location& here)
+{
+	clearrectangle(here.x - SCALE/2, here.y - SCALE/2, here.x + SCALE/2, here.y + SCALE/2);
+}
+
 condit Wall::getCondit(int x, int y)
 {
 	int X = (x - SCALE/2) / SCALE;
